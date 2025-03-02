@@ -12,6 +12,7 @@ node_modules/
 .version-getter/
 build/
 js/
+__pycache__
 
 # Other
 .showcase/

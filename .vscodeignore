@@ -17,6 +17,8 @@ tsconfig.json
 # Build Files
 .version-getter/**
 build.py
+infos.py
+__pycache__
 
 # Resources
 resources/icon.svg

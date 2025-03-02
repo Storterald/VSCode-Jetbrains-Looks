@@ -24,8 +24,6 @@ function observeDiv(
 
                 // Observe the parent
                 observer.observe(element.parentElement!, options);
-
-                console.log(`Observer created for element [${identifier}].`);
                 return observer;
         }
 
@@ -71,9 +69,7 @@ function moveBreadcrumbs(element: HTMLElement): void {
         let container = document.createElement("div");
         container.id = "storterald-breadcrumbs-container";
         container.appendChild(element);
-        console.log(container);
         editor.appendChild(container);
-        console.log(editor);
 
         let options: MutationObserverInit = {
                 childList: true,
@@ -83,8 +79,6 @@ function moveBreadcrumbs(element: HTMLElement): void {
 
         // Observer to check for breadcrumbs deletion
         let subObserver = new MutationObserver(() => {
-                console.info(`Mutation detected for element [.breadcrumbs-below-tabs]`);
-
                 // Avoid recursion
                 subObserver.disconnect();
 
