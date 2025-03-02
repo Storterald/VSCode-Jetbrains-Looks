@@ -1,23 +1,24 @@
-function observeDiv(
-        identifier: string,
+function updateDivs(
+        identifiers: string[],
         callback: CallableFunction,
         observe: boolean = true,
-        options: MutationObserverInit = { childList: true, attributes: false, subtree: false }
-): MutationObserver | null {
+        options: MutationObserverInit | MutationObserverInit[] = { childList: true, attributes: false, subtree: false }
+): (MutationObserver | null)[] | null {
 
-        function createObserver(element: HTMLElement): MutationObserver | null {
+        let observers: (MutationObserver | null)[] = [];
+        let cache: HTMLElement[] = [];
+
+        function createObserver(element: HTMLElement, options: MutationObserverInit): MutationObserver | null {
                 if (!element) {
                         console.error("Cannot create observer with null element.");
                         return null;
                 }
 
-                const observer = new MutationObserver(() => {
-                        console.info(`Mutation detected for element [${identifier}]`);
-
+                const observer = new MutationObserver((): void => {
                         // Avoid recursion
                         observer.disconnect();
                         
-                        callback(element);
+                        callback(cache);
 
                         observer.observe(element.parentElement!, options);
                 });
@@ -27,40 +28,53 @@ function observeDiv(
                 return observer;
         }
 
-        function waitForDiv(): Promise<HTMLElement> {
+        function waitForDivs(): Promise<HTMLElement[]> {
                 return new Promise((resolve, reject) => {
                         const timeout = 5000; // ms
                         const interval = 100; // ms
-
+                        
+                        let elements: (HTMLElement | null)[] = new Array(identifiers.length).fill(null);
+                        let checksRemaining = identifiers.length;
                         const startTime = Date.now();
-                        const checkExist = () => {
+
+                        const checkExist = (index: number, identifier: string): void => {
                                 const element = document.querySelector(identifier);
-                                if (element)
-                                        resolve(element as HTMLElement);
-                                else if (Date.now() - startTime > timeout)
-                                        reject(`Timeout: Element [${identifier}] not found within ${timeout}ms`);
-                                else
-                                        setTimeout(checkExist, interval);
+                                if (element && element !== undefined) {
+                                        elements[index] = element as HTMLElement;
+                                        
+                                        if (--checksRemaining === 0)
+                                                resolve(elements.filter((el) => el !== null) as HTMLElement[]);
+                                } else if (Date.now() - startTime > timeout) {
+                                        reject(`Timeout: Element(s) [${identifiers.join(', ')}] not found within ${timeout}ms`);
+                                } else {
+                                        setTimeout(() => checkExist(index, identifier), interval);
+                                }
                         };
 
-                        checkExist();
+                        identifiers.forEach((identifier, index) => {
+                                checkExist(index, identifier);        
+                        })
                 });
         }
 
-        let observer: MutationObserver | null = null;
-        waitForDiv().then((element: HTMLElement) => {
-                callback(element);
+        waitForDivs().then((elements: HTMLElement[]) => {
+                cache = elements;
+                callback(elements);
 
                 if (observe)
-                        observer = createObserver(element);
+                        elements.forEach((element, index): void => {
+                                observers.push(createObserver(element, Array.isArray(options) ? options[index] : options));
+                        })
         }).catch((error: Error) => {
                 console.error(error);
         });
 
-        return observer;
+        return observers;
 }
 
-function moveBreadcrumbs(element: HTMLElement): void {
+function moveBreadcrumbs(elements: HTMLElement[]): void {
+        const breadcrumbs = elements[0];
+
         const editor = document.querySelector("#workbench\\.parts\\.editor");
         if (!editor)
                 return;
@@ -68,7 +82,7 @@ function moveBreadcrumbs(element: HTMLElement): void {
         // Create custom container.
         let container = document.createElement("div");
         container.id = "storterald-breadcrumbs-container";
-        container.appendChild(element);
+        container.appendChild(breadcrumbs);
         editor.appendChild(container);
 
         let options: MutationObserverInit = {
@@ -96,20 +110,25 @@ function moveBreadcrumbs(element: HTMLElement): void {
         subObserver.observe(container.firstChild!, options);
 }
 
-function moveBottomButtons(element: HTMLElement): void {
-        let top = element.querySelectorAll(".monaco-action-bar.vertical")[0]
-                .querySelector(".actions-container");
-        let bottom = element.querySelectorAll(".monaco-action-bar.vertical")[1]
-                .querySelector(".actions-container");
-        let container = document.querySelector(".titlebar-right")
-                ?.querySelector(".monaco-action-bar");
+function fixButtons(elements: HTMLElement[]): void {
+        const activitybar = elements[0];
+        const titlebar = elements[1];
 
-        if (!bottom || !container || !top)
+        const top = activitybar.querySelectorAll(".monaco-action-bar.vertical")[0]
+                .querySelector(".actions-container") as HTMLElement;
+        const bottom = activitybar.querySelectorAll(".monaco-action-bar.vertical")[1]
+                .querySelector(".actions-container") as HTMLElement;
+        const container = titlebar.querySelector(".monaco-action-bar");
+
+        if (!bottom || !top || !container)
                 return;
 
-        // This moves the node from the original place
+        // Move the bottom sidebar buttons to the top
+        container.id = "storterald-titlebar-container";
+        bottom.style.scale = "1.3";
         container.append(bottom);
 
+        // Add text under sidebar buttons.
         const project = top.querySelector(".codicon-explorer-view-icon");
         if (project) {
                 const p = document.createElement("p");
@@ -143,12 +162,64 @@ function moveBottomButtons(element: HTMLElement): void {
         }
 }
 
-function addGradientDiv(element: HTMLElement): void {
+function addGradientDiv(elements: HTMLElement[]): void {
+        const titlebar = elements[0];
+
         const div = document.createElement("div");
         div.id = "storterald-window-appicon-gradient";
-        element.prepend(div);
+        titlebar.prepend(div);
 }
 
-observeDiv(".breadcrumbs-below-tabs", moveBreadcrumbs, false);
-observeDiv("#workbench\\.parts\\.activitybar", moveBottomButtons);
-observeDiv(".titlebar-left", addGradientDiv, false);
+function moveButtons(elements: HTMLElement[]): void {
+        const originalContainer = elements[0];
+        const titlebar = elements[1];
+
+        let container = titlebar.querySelector(".monaco-action-bar");
+        const profilerContainer = titlebar.querySelector('ul[aria-label="Title actions"');
+
+        if (!container || !profilerContainer)
+                return;
+
+        container.id = "storterald-titlebar-container";
+        profilerContainer.id = "storterald-vscode-profiler-integration-buttons";
+
+        let list = container.querySelector("#storterald-build-and-run-buttons");
+        if (!list) {
+                list = document.createElement("ul");
+                list.id = "storterald-build-and-run-buttons";
+                container.prepend(list);
+        }
+
+        // Move Build and Run buttons to the container
+        const items = originalContainer.querySelectorAll(".action-item.menu-entry");
+        for (let i = 0; i < items.length; ++i) {
+                const li = items[i];
+
+                // Check if the button is from the 'Build and Run' extension.
+                let anchor = li.querySelector('a[aria-label^="Build and Run: "]')
+                if (anchor) {
+                        // If it's the run or the debug button, set the color
+                        // to green.
+                        const attr: string = anchor.getAttribute("aria-label")!;
+                        if (attr === "Build and Run: Run Project"
+                            || attr === "Build and Run: Debug Project") {
+                                li.id = "storterald-build-and-run-exec-button";
+                        }
+
+                        list.append(li);
+                        continue;
+                }
+
+                // Check if the button is from the 'VSCode Profiler Integration' extension.
+                anchor = li.querySelector('a[aria-label^="VSCode Profiler Integration: "]');
+                if (anchor)
+                        profilerContainer.append(li);
+        }
+}
+
+updateDivs([".breadcrumbs-below-tabs"], moveBreadcrumbs, false);
+updateDivs(["#workbench\\.parts\\.activitybar", ".titlebar-right"], fixButtons);
+updateDivs([".titlebar-left"], addGradientDiv, false);
+// Observe the sub tree to check if a button is added after the div creation.
+updateDivs([".tabs .editor-actions .actions-container", ".titlebar-right"], moveButtons, true,
+        [{ childList: true, attributes: false, subtree: true }, { childList: true, attributes: false, subtree: false }]);
