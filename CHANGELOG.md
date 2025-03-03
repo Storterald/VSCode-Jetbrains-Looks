@@ -1,5 +1,27 @@
 # Changelog
 
+## Release 1.2.0
+
+### New Features
+
+ - Added showcases in `readme.md`.
+ - Added optional **build** buttons to the `titlebar` *(WIP)*.
+
+### Changes
+
+ - Changed **logo.png**.
+ - Added small **padding** in `breadcrumbs`.
+ - Improved the extension `build.py` script and switched to `esbuild`.
+ - Improved the **listeners** functions.
+ - Titlebar **gradient color** now set from `package.json`.
+ - Made the text under the sidebar icons **optional**.
+ - Scaled the `settings` and `account`.
+
+### Bug Fixes
+
+ - Fixed `inlay hints` custom **CSS** not always appearing *(WIP)*.
+ - Fixed `titlebar` foreground color being blocked on **white**.
+
 ## Release 1.1.0
 
 ### New Features
