@@ -11,8 +11,11 @@ node_modules/
 # Build Files
 .version-getter/
 build/
-js/
 __pycache__
+
+# Compiled files
+js/
+*.tsbuildinfo
 
 # Other
 .showcase/

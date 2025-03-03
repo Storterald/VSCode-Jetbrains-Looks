@@ -19,6 +19,7 @@ tsconfig.json
 build.py
 infos.py
 __pycache__
+js/**/*.map
 
 # Resources
 resources/icon.svg

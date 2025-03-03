@@ -10,7 +10,7 @@
   },
   "main": "./build/extension.js",
   "scripts": {
-    "vscode:prepublish": "tsc --build"
+    "vscode:prepublish": "node esbuild.config.js"
   },
   "activationEvents": [
     "onCommand:workbench.action.selectTheme",
@@ -20,6 +20,21 @@
     "Themes"
   ],
   "contributes": {
+    "configuration": {
+      "title": "Jetbrains IDE Look",
+      "properties": {
+        "jetbrains.ide.look.textUnderButtons": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show labels under the sidebar buttons."
+        },
+        "jetbrains.ide.look.showBuildButtons": {
+          "type": "boolean",
+          "default": true,
+          "description": "Add custom build buttons in the titlebar."
+        }
+      }
+    },
     "configurationDefaults": {
       "editor.suggest.showStatusBar": false,
       "editor.lineHeight": 1.675,
@@ -32,6 +47,62 @@
       "workbench.layoutControl.enabled": false,
       "workbench.productIconTheme": "jetbrains-new-ui-product-icons",
       "workbench.panel.showLabels": false
+    },
+    "colors": [
+      {
+        "id": "jetbrains.ide.look.gradientColor",
+        "defaults": {
+          "dark": "#3574f040",
+          "light": "#3574F040"
+        },
+        "description": "Titlebar gradient color"
+      }
+    ],
+    "commands": [
+      {
+        "command": "jetbrains-ide-look.build",
+        "title": "Jetbrains IDE Look: Build Project",
+        "icon": "$(tools)"
+      },
+      {
+        "command": "jetbrains-ide-look.buildOptions",
+        "title": "Jetbrains IDE Look: Build Options",
+        "icon": "$(find-expanded)"
+      },
+      {
+        "command": "jetbrains-ide-look.run",
+        "title": "Jetbrains IDE Look: Run Project",
+        "icon": "$(notebook-execute)"
+      },
+      {
+        "command": "jetbrains-ide-look.debug",
+        "title": "Jetbrains IDE Look: Debug Project",
+        "icon": "$(debug)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "jetbrains-ide-look.buildOptions",
+          "when": "config.jetbrains.ide.look.showBuildButtons",
+          "group": "navigation@1"
+        },
+        {
+          "command": "jetbrains-ide-look.build",
+          "when": "config.jetbrains.ide.look.showBuildButtons",
+          "group": "navigation@2"
+        },
+        {
+          "command": "jetbrains-ide-look.run",
+          "when": "config.jetbrains.ide.look.showBuildButtons",
+          "group": "navigation@3"
+        },
+        {
+          "command": "jetbrains-ide-look.debug",
+          "when": "config.jetbrains.ide.look.showBuildButtons",
+          "group": "navigation@4"
+        }
+      ]
     }
   },
   "extensionDependencies": [
@@ -43,7 +114,8 @@
     "@types/node": "^22.7.5",
     "@types/vscode": "^1.0.0",
     "esbuild": "^0.19.11",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "glob": "^11.0.1"
   },
   "repository": {
     "url": "https://github.com/Storterald/Jetbrains-IDE-Look"

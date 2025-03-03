@@ -1,9 +1,9 @@
 .menubar.inactive {
-    background-image: linear-gradient(to right, #3574f040, var(--vscode-titleBar-inactiveBackground));
+    background-image: linear-gradient(to right, var(--vscode-jetbrains-ide-look-gradientColor), var(--vscode-titleBar-inactiveBackground));
 }
 
 .menubar {
-    background-image: linear-gradient(to right, #3574f040, var(--vscode-titleBar-activeBackground));
+    background-image: linear-gradient(to right, var(--vscode-jetbrains-ide-look-gradientColor), var(--vscode-titleBar-activeBackground));
 }
 
 .window-appicon {
@@ -14,11 +14,11 @@
     width: 35px;
     height: 35px;
     position: absolute;
-    background-image: linear-gradient(to right, var(--vscode-titleBar-activeBackground), #3574f040);
+    background-image: linear-gradient(to right, var(--vscode-titleBar-activeBackground), var(--vscode-jetbrains-ide-look-gradientColor));
 }
 
 .part.titlebar.inactive #storterald-window-appicon-gradient {
-    background-image: linear-gradient(to right, var(--vscode-titleBar-inactiveBackground), #3574f040);
+    background-image: linear-gradient(to right, var(--vscode-titleBar-inactiveBackground), var(--vscode-jetbrains-ide-look-gradientColor));
 }
 
 .menubar-menu-title {

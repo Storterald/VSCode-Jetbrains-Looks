@@ -21,10 +21,6 @@
     flex-direction: column;
 }
 
-.monaco-action-bar.vertical .action-label.codicon::before {
-    scale: 75%;
-}
-
 .monaco-action-bar .badge .badge-content {
     display: none;
 }
