@@ -38,7 +38,7 @@
 }
 
 #storterald-titlebar-container {
-    padding-right: 20px;
+    padding-right: 1vw;
     display: flex;
     color: var(--vscode-foreground);
 }
